@@ -1,21 +1,46 @@
-# Ereceipt
-
-**TODO: Add description**
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ereceipt` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:ereceipt, "~> 0.1.0"}
-  ]
-end
+# ereceipt
+## Quick Start
+#### Build
+At the project root directory:
+```sh
+$ make [build]
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/ereceipt](https://hexdocs.pm/ereceipt).
-
+After this command, executable *./ereceipt* will be generated.
+To install this to home directory, you can use:
+```sh
+$ mix escript.install
+```
+Add *~/.mix/escripts/ereceipt* to PATH so that you can run this everywhere using local configuration files.
+#### Run test cases
+At the project root directory:
+```sh
+$ make test
+```
+#### Run example
+At the project root directory:
+```sh
+$ make example
+```
+This command will running application with data files in *test/example* directory
+## Documentation
+To get help:
+```sh
+$ ereceipt -h
+```
+With *categories.csv*, *tax.conf* and *input.csv* existed in local directory:
+```sh
+$ ereceipt
+```
+To manually sepecify those files:
+```sh
+$ ereceipt -i input.csv -i input2.csv -i input3.csv -t tax.conf -c categories.csv
+```
+To also write result into output CSV (in current directory) instead of stdout only:
+```sh
+$ ereceipt -o ""
+```
+... or specified output directory:
+```sh
+$ ereceipt -o "test/example"
+```
+Output files named *output_\*.csv* will be created.
