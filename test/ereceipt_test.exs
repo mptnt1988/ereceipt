@@ -10,7 +10,7 @@ defmodule EreceiptTest do
                                         "-t", tax_conf_file()]
 
   use ExUnit.Case
-  doctest Ereceipt
+  # doctest Ereceipt
 
   test "exempt, not imported" do
     input =

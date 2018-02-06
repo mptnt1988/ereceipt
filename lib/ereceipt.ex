@@ -9,7 +9,7 @@ defmodule Ereceipt do
   ## Examples
 
   iex> Ereceipt.main []
-  :nil
+  :ok
 
   """
 
@@ -48,9 +48,10 @@ defmodule Ereceipt do
     #         sales_tax: <calculated tax on this entry>}
     #     )}
     # )
-    _receipts = make_receipts(conf.input, conf.categories, conf.tax)
+    receipts = make_receipts(conf.input, conf.categories, conf.tax)
 
-    output()
+    # Output all to stdout and CSV if specified
+    output(receipts, conf.output)
   end
 
   defp parse_args(args) do
@@ -215,7 +216,68 @@ defmodule Ereceipt do
     Float.ceil(raw_tax * 20) / 20
   end
 
-  defp output do
+  defp output([receipt | others], output_dir) do
+    output_stdout(receipt)
+    output_file(receipt, output_dir)
+    output(others, output_dir)
+  end
+  defp output([], _), do: :ok
+
+  defp output_stdout(receipt) do
+    IO.puts("\n## #{Path.rootname(receipt.output_name)}")
+    IO.puts("Quantity, Product, Total Amount")
+
+    reduce_func = fn(entry, {acc_tax, acc_total}) ->
+      %{quantity: quantity,
+        product: product,
+        price: price,
+        sales_tax: sales_tax} = entry
+      total_amount = quantity * price + sales_tax
+      total_amount_str = float_format(total_amount)
+      IO.puts(Enum.join([quantity, product, total_amount_str], ", "))
+      {acc_tax + sales_tax, acc_total + total_amount}
+    end
+
+    {sales_taxes, total} =
+      receipt.entries
+      |> Enum.reduce({0, 0}, reduce_func)
+
+    IO.puts("\nSales Taxes: #{float_format(sales_taxes)}")
+    IO.puts("Total: #{float_format(total)}")
+  end
+
+  defp float_format(f), do: :erlang.float_to_binary(f, [decimals: 2])
+
+  defp output_file(_receipt, nil), do: :ok
+  defp output_file(receipt, dir) do
+    file_path = Path.join(dir, receipt.output_name)
+    file = File.open!(file_path, [:write, :utf8])
+    table_data = [["Quantity", "Product", "Category", "Price",
+                   "Amount", "Sales Tax", "Total Amount"]]
+
+    reduce_func = fn(entry, acc) ->
+      %{quantity: quantity,
+        product: product,
+        category: category,
+        price: price,
+        sales_tax: sales_tax} = entry
+      amount = quantity * price
+      total_amount = amount + sales_tax
+      entry_list = [
+        quantity, product, category, float_format(price), float_format(amount),
+        float_format(sales_tax), float_format(total_amount)
+      ]
+      [entry_list | acc]
+    end
+
+    receipt.entries
+    |> Enum.reduce(table_data, reduce_func)
+    |> Enum.reverse
+    |> CSV.encode
+    |> Enum.each(&IO.write(file, &1))
+
+    File.close(file)
+    IO.puts("Data output to #{file_path}")
   end
 
 end
