@@ -80,6 +80,10 @@ defmodule Ereceipt do
     IO.puts("\t\t\t\t\t\t-o \"\" specifies current directory.")
     IO.puts("\t-t, --tax TAX_CONF\t\t\tConfig file for tax rates.")
     IO.puts("\t\t\t\t\t\tDefault to \"tax.conf\" in current directory if not specified.")
+    IO.puts("Examples:")
+    IO.puts("\t$ #{command}")
+    IO.puts("\t$ #{command} -i input.csv -i input2.csv -i input3.csv -o \"\"")
+
   end
 
   defp get_conf(opts) do

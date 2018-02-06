@@ -1,0 +1,9 @@
+Product,Category,Imported
+book,book,
+music cd,entertainment,
+chocolate bar,food,
+box of chocolates,food,
+bottle of perfume,fragrance,
+packet of headache pills,medical,
+imported box of chocolates,food,TRUE
+imported bottle of perfume,fragrance,TRUE
