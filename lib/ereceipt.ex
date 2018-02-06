@@ -35,8 +35,21 @@ defmodule Ereceipt do
     #   tax: %{basic_rate: <rate>,
     #          exempt: list(<exempt category>),
     #          import_duty: <import_taxrate>}}
-    _conf = parse_args(args)
-    make_receipts()
+    conf = parse_args(args)
+
+    # Make receipts in form of
+    # list(
+    #   %{output_name: <on>,
+    #     entries: list(
+    #       %{quantity: <quantity of entry>,
+    #         product: <product name>,
+    #         category: <category of product>,
+    #         price: <unit price of product>,
+    #         sales_tax: <calculated tax on this entry>}
+    #     )}
+    # )
+    _receipts = make_receipts(conf.input, conf.categories, conf.tax)
+
     output()
   end
 
@@ -152,7 +165,54 @@ defmodule Ereceipt do
     str |> Float.parse() |> convert_fun.()
   end
 
-  defp make_receipts do
+  defp make_receipts(input_files, categories_conf, tax_conf) do
+    input_files
+    |> Enum.map(fn(csv) -> make_receipt(csv, categories_conf, tax_conf) end)
+  end
+
+  defp make_receipt(input_file, categories_conf, tax_conf) do
+    output_name = "output_" <> Path.basename(input_file)
+    entries = get_entries(input_file, categories_conf, tax_conf)
+    %{
+      output_name: output_name,
+      entries: entries
+    }
+  end
+
+  defp get_entries(csv, categories_conf, tax_conf) do
+    make_entry_func = fn ({:ok, e}) ->
+      quantity = String.to_integer(e["Quantity"])
+      product = e["Product"]
+      category = categories_conf[product].category
+      {price, _} = Float.parse(e["Price"])
+      input_entry = %{quantity: quantity,
+                      product: product,
+                      category: category,
+                      price: price}
+      sales_tax = calculate_sales_tax(input_entry, categories_conf, tax_conf)
+      Map.put(input_entry, :sales_tax, sales_tax)
+    end
+
+    csv
+    |> File.stream!
+    |> CSV.decode(headers: true)
+    |> Enum.map(make_entry_func)
+  end
+
+  defp calculate_sales_tax(input_entry, categories_conf, tax_conf) do
+    product = input_entry.product
+    product_info = categories_conf[product]
+
+    exempt_list = tax_conf.exempt
+    tax_exempt? = product_info.category in exempt_list
+    basic_taxrate = tax_exempt? && 0 || tax_conf.basic_rate
+
+    imported? = product_info.imported?
+    import_taxrate = imported? && tax_conf.import_duty || 0
+
+    taxrate = basic_taxrate + import_taxrate
+    raw_tax = input_entry.quantity * input_entry.price * taxrate
+    Float.ceil(raw_tax * 20) / 20
   end
 
   defp output do
