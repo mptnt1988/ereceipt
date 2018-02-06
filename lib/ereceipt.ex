@@ -4,15 +4,26 @@ defmodule Ereceipt do
   """
 
   @doc """
-  Hello world.
+  Ereceipt
 
   ## Examples
 
-      iex> Ereceipt.hello
-      :world
+      iex> Ereceipt.main []
+      :nil
 
   """
-  def hello do
-    :world
+  def main(args) do
+    parse_args(args)
+    make_receipts()
+    output()
+  end
+
+  defp parse_args(_args) do
+  end
+
+  defp make_receipts do
+  end
+
+  defp output do
   end
 end

@@ -2,7 +2,7 @@ defmodule EreceiptTest do
   use ExUnit.Case
   doctest Ereceipt
 
-  test "greets the world" do
-    assert Ereceipt.hello() == :world
+  test "dummy test case" do
+    assert Ereceipt.main([]) == nil
   end
 end

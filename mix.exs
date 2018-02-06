@@ -6,6 +6,7 @@ defmodule Ereceipt.MixProject do
       app: :ereceipt,
       version: "0.1.0",
       elixir: "~> 1.6",
+      escript: [main_module: Ereceipt],
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
