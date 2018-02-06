@@ -60,10 +60,13 @@ defmodule Ereceipt do
             output: :string, tax: :string]
     {parsed_opts, _remained_args, _invalid_opts} =
       OptionParser.parse(args, aliases: alias_opts, strict: opts)
+
+    # Print help if -h | --help specified, other options ignored
     if Keyword.get(parsed_opts, :help) do
       print_help()
       System.halt()
     end
+
     get_conf(parsed_opts)
   end
 
